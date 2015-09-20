@@ -1114,15 +1114,26 @@ class ScaleIO(SIO_Generic_Object):
         return response
 
     #def create_volume(self, volName, volSizeInMb, pdObj, thinProvision=True, **kwargs): # Worked in v1.31 but not in v1.32
-    def create_volume(self, volName, volSizeInMb, pdObj, spObj, thinProvision=True, **kwargs): #v1.32 require storagePoolId when creating a volume
+    def create_volume(self, volName, volSizeInMb, pdObj, spObj, thinProvision=True,
+                        ramCache=False, cGroupId=None, **kwargs): #v1.32 require storagePoolId when creating a volume
         # Check if object parameters are the correct ones, otherwise throw error
-        self._check_login()    
+        self._check_login()
+
+        # TODO SuperNova need to support snapshot voltype
         if thinProvision:
             volType = 'ThinProvisioned'
         else:
             volType = 'ThickProvisioned'
+
         # ScaleIO v1.31 demand protectionDomainId in JSON but not storgePoolId. v1.32 is fine with storeagePoolId only
-        volumeDict = {'protectionDomainId': pdObj.id, 'storagePoolId': spObj.id, 'volumeSizeInKb': str(int(volSizeInMb) * 1024),  'name': volName, 'volumeType': volType}
+        # We will need to add mappedSdcInfo for domains (or create new request of set_sdc_limits to mod BW and IO)
+        volumeDict = {'protectionDomainId': pdObj.id, 'storagePoolId': spObj.id, 'volumeSizeInKb': str(int(volSizeInMb) * 1024),
+                'name': volName, 'volumeType': volType, 'useRmcache': str(ramCache)}
+
+        # Consistency Groups are optional
+        if cGroupId is not None:
+            volumeDict['consistencyGroupId'] = cGroupId
+
         response = self._do_post("{}/{}".format(self._api_url, "types/Volume/instances"), json=volumeDict)
 
         if kwargs:
