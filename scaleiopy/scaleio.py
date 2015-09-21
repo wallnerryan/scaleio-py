@@ -1158,13 +1158,15 @@ class ScaleIO(SIO_Generic_Object):
         # Check if object parameters are the correct ones, otherwise throw error
         self._check_login()
 
-        mappedSdcInfo = {'iopsLimit' : iopsLimit, 'bandwidthLimitInKbps' : bandwidthLimitInKbps}
+        mappedSdcInfo = {'bandwidthLimitInKbps' : str(bandwidthLimitInKbps)}
+        if iopsLimit > 0:
+           mappedSdcInfo['iopsLimit'] = str(iopsLimit)
         if sdcId is not None:
-            mappedSdcInfo['sdcId'] = sdcId
+            mappedSdcInfo['sdcId'] = str(sdcId)
         if sdcGuid is not None:
-            mappedSdcInfo['guid'] = sdcGuid
+            mappedSdcInfo['guid'] = str(sdcGuid).upper()
 
-        response = self._do_post("{}/{}".format(self._api_url, "/api/instances/Volume::{}/action/setMappedSdcLimits".format(volumeObj.id)), json=mappedSdcInfo)
+        response = self._do_post("{}/{}".format(self._api_url, "instances/Volume::{}/action/setMappedSdcLimits".format(volumeObj.id)), json=mappedSdcInfo)
         return response
 
     def resize_volume(self, volumeObj, sizeInGb, bsize=1000):
