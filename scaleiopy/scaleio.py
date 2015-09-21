@@ -1161,7 +1161,6 @@ class ScaleIO(SIO_Generic_Object):
         mappedSdcInfo = {'iopsLimit' : iopsLimit, 'bandwidthLimitInKbps' : bandwidthLimitInKbps}
         if sdcId is not None:
             mappedSdcInfo['sdcId'] = sdcId
-
         if sdcGuid is not None:
             mappedSdcInfo['guid'] = sdcGuid
 
