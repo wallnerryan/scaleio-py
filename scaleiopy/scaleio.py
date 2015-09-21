@@ -1126,9 +1126,10 @@ class ScaleIO(SIO_Generic_Object):
             volType = 'ThickProvisioned'
 
         # ScaleIO v1.31 demand protectionDomainId in JSON but not storgePoolId. v1.32 is fine with storeagePoolId only
-        # We will need to add mappedSdcInfo for domains (or create new request of set_sdc_limits to mod BW and IO)
         volumeDict = {'protectionDomainId': pdObj.id, 'storagePoolId': spObj.id, 'volumeSizeInKb': str(int(volSizeInMb) * 1024),
                 'name': volName, 'volumeType': volType, 'useRmcache': str(ramCache)}
+
+
 
         # Consistency Groups are optional
         if cGroupId is not None:
@@ -1148,6 +1149,22 @@ class ScaleIO(SIO_Generic_Object):
                                         self.map_volume_to_sdc(self.get_volume_by_name(volName), enableMapAllSdcs=True)
                                     else:
                                         self.map_volume_to_sdc(self.get_volume_by_name(volName), self.get_sdc_by_name(value))
+        return response
+
+    def set_mapped_sdc_limits(self, volumeObj, sdcId=None, sdcGuid=None, iopsLimit=0, bandwidthLimitInKbps=0):
+        """
+        Map limits onto a SDC for a Specific Volume
+        """
+        # Check if object parameters are the correct ones, otherwise throw error
+        self._check_login()
+
+        mappedSdcInfo = {'iopsLimit' : iopsLimit, 'bandwidthLimitInKbps' : bandwidthLimitInKbps}
+        if sdcId is not None:
+            mappedSdcInfo['sdcId'] = sdcId
+        else if sdcGuid is not None:
+            mappedSdcInfo['guid'] = sdcGuid
+
+        response = self.do_post("{}/{}".format(self.api, "/api/instances/Volume::{}/action/setMappedSdcLimits".format(volumeObj.id)) json=mappedSdcInfo)
         return response
 
     def resize_volume(self, volumeObj, sizeInGb, bsize=1000):
