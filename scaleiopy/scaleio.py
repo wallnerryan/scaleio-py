@@ -1161,10 +1161,11 @@ class ScaleIO(SIO_Generic_Object):
         mappedSdcInfo = {'iopsLimit' : iopsLimit, 'bandwidthLimitInKbps' : bandwidthLimitInKbps}
         if sdcId is not None:
             mappedSdcInfo['sdcId'] = sdcId
-        else if sdcGuid is not None:
+
+        if sdcGuid is not None:
             mappedSdcInfo['guid'] = sdcGuid
 
-        response = self.do_post("{}/{}".format(self.api, "/api/instances/Volume::{}/action/setMappedSdcLimits".format(volumeObj.id)) json=mappedSdcInfo)
+        response = self._do_post("{}/{}".format(self._api_url, "/api/instances/Volume::{}/action/setMappedSdcLimits".format(volumeObj.id)), json=mappedSdcInfo)
         return response
 
     def resize_volume(self, volumeObj, sizeInGb, bsize=1000):
